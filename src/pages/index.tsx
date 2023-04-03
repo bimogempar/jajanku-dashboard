@@ -1,6 +1,32 @@
+import { useAuth } from '@/context/AuthContext';
 import { Box, Button, Checkbox, Flex, FormControl, FormLabel, Heading, HStack, Input, Text, VStack } from '@chakra-ui/react'
+import { useFormik } from 'formik';
+import { useRouter } from 'next/router';
+
+interface LoginType {
+  email: string;
+  password: string;
+}
 
 function Home(): JSX.Element {
+  const { logIn } = useAuth();
+  const router = useRouter();
+
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+      rememberMe: false
+    },
+    onSubmit: async (values: LoginType) => {
+      try {
+        await logIn(values.email, values.password);
+        router.push("/dashboard");
+      } catch (error: any) {
+        console.log(error.message);
+      }
+    }
+  });
 
   return (
     <Flex direction="column" justify="center" minHeight="100vh">
@@ -21,32 +47,47 @@ function Home(): JSX.Element {
               Log in untuk dapat mengakses semua layanan
             </Text>
           </VStack>
-          <FormControl>
-            <FormLabel>E-Mail Address</FormLabel>
-            <Input
-              variant="filled"
-              placeholder="Enter your email address"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Password</FormLabel>
-            <Input
-              variant="filled"
-              type="password"
-              placeholder="Enter your password"
-            />
-          </FormControl>
-          <HStack p="5px" w="full">
-            <Checkbox>Remember me</Checkbox>
-            <Button variant="link" colorScheme="blue">Forgot Password?</Button>
-          </HStack>
-          <Button
-            rounded="md"
-            colorScheme="blue"
-            w="full"
-          >
-            Sign in
-          </Button>
+          <Box p={6} w="full" rounded="md">
+            <form onSubmit={formik.handleSubmit}>
+              <VStack spacing={4} align="flex-start">
+                <FormControl>
+                  <FormLabel htmlFor="email">Email Address</FormLabel>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    variant="filled"
+                    onChange={formik.handleChange}
+                    value={formik.values.email}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel htmlFor="password">Password</FormLabel>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    variant="filled"
+                    onChange={formik.handleChange}
+                    value={formik.values.password}
+                  />
+                </FormControl>
+                <Checkbox
+                  id="rememberMe"
+                  name="rememberMe"
+                  onChange={formik.handleChange}
+                  isChecked={formik.values.rememberMe}
+                  colorScheme="purple"
+                >
+                  Remember me?
+                </Checkbox>
+                <Button type="submit" colorScheme="purple" width="full">
+                  Login
+                </Button>
+              </VStack>
+            </form>
+          </Box>
+
           <HStack w="full" justify="center">
             <Text>Don't have an account?</Text>
             <Button
@@ -63,4 +104,8 @@ function Home(): JSX.Element {
 }
 
 export default Home;
+
+function toast(arg0: { title: string; description: string; status: string; duration: number; isClosable: boolean; }) {
+  throw new Error('Function not implemented.');
+}
 
