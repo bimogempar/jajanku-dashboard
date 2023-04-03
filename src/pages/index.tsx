@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
-import { Box, Button, Checkbox, Flex, FormControl, FormLabel, Heading, HStack, Input, Text, VStack } from '@chakra-ui/react'
+import { Box, Button, Checkbox, Flex, FormControl, FormLabel, Heading, HStack, Input, Text, useToast, VStack } from '@chakra-ui/react'
 import { useFormik } from 'formik';
-import { useRouter } from 'next/router';
+import toast from 'react-hot-toast';
 
 interface LoginType {
   email: string;
@@ -10,7 +10,6 @@ interface LoginType {
 
 function Home(): JSX.Element {
   const { logIn } = useAuth();
-  const router = useRouter();
 
   const formik = useFormik({
     initialValues: {
@@ -19,12 +18,20 @@ function Home(): JSX.Element {
       rememberMe: false
     },
     onSubmit: async (values: LoginType) => {
-      try {
-        await logIn(values.email, values.password);
-        router.push("/dashboard");
-      } catch (error: any) {
-        console.log(error.message);
-      }
+      const myPromise = logIn(values.email, values.password)
+        .then((response: any) => {
+          console.log(response);
+        }).catch((error: any) => {
+          throw error;
+        });;
+      toast.promise(
+        myPromise,
+        {
+          loading: "Loading...",
+          success: "Login berhasil!",
+          error: "Email atau Kata Sandi anda salah!",
+        }
+      );
     }
   });
 
@@ -41,11 +48,6 @@ function Home(): JSX.Element {
         <VStack spacing={5} mt="1.5em" mb="4em" align="flex-start" w="full">
           <VStack spacing={1} align={["flex-start", "center"]} w="full" p="15px">
             <Heading textAlign="center" mb="5px">Sign in to your account</Heading>
-            <Text
-              textAlign="center"
-            >
-              Log in untuk dapat mengakses semua layanan
-            </Text>
           </VStack>
           <Box p={6} w="full" rounded="md">
             <form onSubmit={formik.handleSubmit}>
@@ -87,7 +89,6 @@ function Home(): JSX.Element {
               </VStack>
             </form>
           </Box>
-
           <HStack w="full" justify="center">
             <Text>Don't have an account?</Text>
             <Button
@@ -104,8 +105,3 @@ function Home(): JSX.Element {
 }
 
 export default Home;
-
-function toast(arg0: { title: string; description: string; status: string; duration: number; isClosable: boolean; }) {
-  throw new Error('Function not implemented.');
-}
-
